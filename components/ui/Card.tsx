@@ -21,7 +21,7 @@ export function Card({ className, variant = 'convex', ...props }: CardProps) {
   );
 }
 
-interface CardHeaderProps extends HTMLAttributes<HTMLDivElement> {}
+type CardHeaderProps = HTMLAttributes<HTMLDivElement>
 
 export function CardHeader({ className, ...props }: CardHeaderProps) {
   return (
@@ -32,7 +32,7 @@ export function CardHeader({ className, ...props }: CardHeaderProps) {
   );
 }
 
-interface CardContentProps extends HTMLAttributes<HTMLDivElement> {}
+type CardContentProps = HTMLAttributes<HTMLDivElement>
 
 export function CardContent({ className, ...props }: CardContentProps) {
   return (
@@ -43,7 +43,7 @@ export function CardContent({ className, ...props }: CardContentProps) {
   );
 }
 
-interface CardFooterProps extends HTMLAttributes<HTMLDivElement> {}
+type CardFooterProps = HTMLAttributes<HTMLDivElement>
 
 export function CardFooter({ className, ...props }: CardFooterProps) {
   return (

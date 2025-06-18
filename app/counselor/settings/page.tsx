@@ -1,7 +1,6 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/Card";
-import { cn } from "@/lib/utils";
 
 export default function SettingPage() {
   return (

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Layout } from '@/components/shared/Layout';
-import { Card, CardContent, CardHeader } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { UserRole, AppointmentStatus } from '@/types';
 import { mockAppointmentRequests, currentCounselor } from '@/lib/mockData';

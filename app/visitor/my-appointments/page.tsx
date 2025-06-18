@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Layout } from '@/components/shared/Layout';
 import { Card, CardContent } from '@/components/ui/Card';
+import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { UserRole, AppointmentStatus } from '@/types';
 import { mockAppointments, mockCounselors } from '@/lib/mockData';
@@ -87,7 +88,7 @@ export default function MyAppointmentsPage() {
               <h3 className="text-lg font-medium text-gray-900 mb-2">暂无预约记录</h3>
               <p className="text-gray-600 mb-6">您还没有任何{activeTab !== 'all' ? tabs.find(t => t.id === activeTab)?.label : ''}预约</p>
               <Button>
-                <a href="/visitor/counselors">浏览咨询师</a>
+                <Link href="/visitor/counselors">浏览咨询师</Link>
               </Button>
             </div>
           ) : (
