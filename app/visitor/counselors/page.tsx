@@ -34,9 +34,9 @@ export default function CounselorsPage() {
     <Layout userRole={UserRole.VISITOR}>
       <div className="space-y-6">
         {/* 页面标题 */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">咨询师列表</h1>
-          <p className="text-gray-600 mt-1">选择合适的心理咨询师，预约咨询时间</p>
+        <div className="border-b border-gray-100 pb-4">
+          <h1 className="qijia-title-sub text-[#222222]">专业咨询师</h1>
+          <p className="qijia-text-body text-[#333333] mt-2">寻找适合的心理咨询师，开启心灵对话</p>
         </div>
 
         {/* 筛选区 */}
@@ -45,13 +45,13 @@ export default function CounselorsPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* 关键词搜索 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block qijia-text-body font-medium text-[#222222] mb-2">
                   关键词搜索
                 </label>
                 <input
                   type="text"
-                  placeholder="输入关键词"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="输入姓名或专长"
+                  className="w-full px-3 py-2 border-0 border-b-2 border-[#DDDDDD] bg-transparent focus:outline-none focus:border-[var(--qijia-yellow)] transition-colors qijia-text-body text-[#333333]"
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
                 />
@@ -59,11 +59,11 @@ export default function CounselorsPage() {
 
               {/* 擅长领域 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block qijia-text-body font-medium text-[#222222] mb-2">
                   擅长领域
                 </label>
                 <select
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border-0 border-b-2 border-[#DDDDDD] bg-transparent focus:outline-none focus:border-[var(--qijia-yellow)] transition-colors qijia-text-body text-[#333333]"
                   value={filter.specialty || ''}
                   onChange={(e) => setFilter({ ...filter, specialty: e.target.value || undefined })}
                 >
@@ -76,11 +76,11 @@ export default function CounselorsPage() {
 
               {/* 性别 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block qijia-text-body font-medium text-[#222222] mb-2">
                   性别
                 </label>
                 <select
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border-0 border-b-2 border-[#DDDDDD] bg-transparent focus:outline-none focus:border-[var(--qijia-yellow)] transition-colors qijia-text-body text-[#333333]"
                   value={filter.gender || ''}
                   onChange={(e) => setFilter({ ...filter, gender: e.target.value as '男' | '女' || undefined })}
                 >
@@ -110,12 +110,12 @@ export default function CounselorsPage() {
         {/* 咨询师卡片列表 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCounselors.map(counselor => (
-            <Card key={counselor.id} className="hover:shadow-lg transition-shadow duration-200">
+            <Card key={counselor.id} className="hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
               <CardContent className="p-6">
                 <div className="flex items-start space-x-4">
                   {/* 头像 */}
-                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
-                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-16 h-16 bg-gradient-to-br from-[var(--qijia-yellow)] to-[#f4c861] rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
+                    <svg className="w-8 h-8 text-[#222222]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
@@ -123,8 +123,8 @@ export default function CounselorsPage() {
                   <div className="flex-1 min-w-0">
                     {/* 姓名和性别 */}
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900">{counselor.name}</h3>
-                      <span className="text-sm text-gray-500">{counselor.gender}</span>
+                      <h3 className="qijia-title-sub text-[#222222]">{counselor.name}</h3>
+                      <span className="qijia-text-helper text-[#666666]">{counselor.gender}</span>
                     </div>
 
                     {/* 擅长标签 */}
@@ -132,7 +132,7 @@ export default function CounselorsPage() {
                       {counselor.specialties.map((specialty, index) => (
                         <span
                           key={index}
-                          className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full"
+                          className="qijia-tag"
                         >
                           {specialty}
                         </span>
@@ -140,7 +140,7 @@ export default function CounselorsPage() {
                     </div>
 
                     {/* 简介（前两行） */}
-                    <p className="text-sm text-gray-600 line-clamp-2 mb-4">
+                    <p className="qijia-text-body text-[#333333] line-clamp-2 mb-4">
                       {counselor.bio}
                     </p>
 
@@ -160,11 +160,13 @@ export default function CounselorsPage() {
         {/* 空状态 */}
         {filteredCounselors.length === 0 && (
           <div className="text-center py-12">
-            <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">未找到符合条件的咨询师</h3>
-            <p className="text-gray-600">请尝试调整筛选条件</p>
+            <div className="w-16 h-16 bg-[#f9f9f9] rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-[#666666]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <h3 className="qijia-title-sub text-[#222222] mb-2">未找到符合条件的咨询师</h3>
+            <p className="qijia-text-body text-[#333333]">请尝试调整筛选条件，或联系客服获得帮助</p>
           </div>
         )}
       </div>

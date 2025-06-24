@@ -12,24 +12,24 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', loading, disabled, isPressed = false, children, ...props }, ref) => {
-    const baseClasses = 'neu-button neu-transition inline-flex items-center justify-center rounded-lg font-medium focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed';
+    const baseClasses = 'inline-flex items-center justify-center rounded font-medium focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200';
     
     const variants = {
-      primary: 'text-white bg-primary-600 hover:bg-primary-700',
-      secondary: 'text-white bg-secondary-600 hover:bg-secondary-700',
-      outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50',
-      ghost: 'text-gray-700 hover:bg-gray-100',
-      danger: 'text-white bg-danger-600 hover:bg-danger-700'
+      primary: 'bg-[var(--qijia-yellow)] text-[#222222] hover:bg-[#f4c861] shadow-md hover:shadow-lg',
+      secondary: 'bg-white text-[#222222] border border-[#DDDDDD] hover:bg-[#f9f9f9]',
+      outline: 'border border-[#DDDDDD] text-[#222222] hover:bg-[#f9f9f9]',
+      ghost: 'text-[#222222] hover:bg-[#f9f9f9]',
+      danger: 'bg-[var(--soft-red)] text-[#222222] hover:bg-[#e85a4a] shadow-md hover:shadow-lg'
     };
     
     const sizes = {
-      sm: 'px-3 py-1.5 text-sm',
-      md: 'px-4 py-2 text-sm',
-      lg: 'px-6 py-3 text-base'
+      sm: 'px-3 py-1.5 text-sm rounded',
+      md: 'px-4 py-2 text-sm rounded',
+      lg: 'px-6 py-3 text-base rounded'
     };
 
     // Add pressed state class if button is pressed
-    const pressedClass = isPressed ? 'neu-pressed' : '';
+    const pressedClass = isPressed ? 'shadow-inner' : '';
 
     return (
       <button

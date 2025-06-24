@@ -87,21 +87,37 @@ function InboxIcon() {
   );
 }
 
+function HomeIcon() {
+  return (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+    </svg>
+  );
+}
+
 export function Layout({ children, userRole }: LayoutProps) {
   const pathname = usePathname();
   const navItems = userRole === UserRole.VISITOR ? visitorNavItems : counselorNavItems;
 
   return (
-    <div className="flex h-screen bg-[var(--bg-color)]">
+    <div className="flex h-screen bg-[var(--hu-powder-white)]">
       {/* 左侧导航栏 */}
-      <div className="w-64 neu-card m-4 rounded-3xl overflow-hidden">
-        <div className="p-6">
-          <h1 className="text-xl font-bold text-[var(--text-color)]">
-            {userRole === UserRole.VISITOR ? '心理咨询预约' : '咨询师工作台'}
-          </h1>
+      <div className="w-64 bg-white shadow-lg m-4 rounded-lg overflow-hidden">
+        <div className="p-6 border-b border-gray-100">
+          {/* 齐家品牌标志 */}
+          <div className="text-center mb-4">
+            <div className="inline-flex items-center justify-center w-12 h-12 mb-2">
+              <img src="/qijia-logo.svg" alt="齐家" className="w-12 h-12" />
+            </div>
+            <h1 className="qijia-title-sub text-[var(--ink-black)]">齐家</h1>
+          </div>
+          <p className="qijia-text-helper text-center text-[var(--ink-gray)]">
+            {userRole === UserRole.VISITOR ? '来访者服务台' : '咨询师工作台'}
+          </p>
         </div>
-        <nav className="mt-6">
-          <div className="space-y-3 px-3 pb-6">
+        
+        <nav className="mt-4">
+          <div className="space-y-2 px-4 pb-6">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
@@ -109,13 +125,13 @@ export function Layout({ children, userRole }: LayoutProps) {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all neu-transition',
+                    'flex items-center px-4 py-3 qijia-text-body rounded-lg transition-all duration-200',
                     isActive
-                      ? 'neu-pressed text-[var(--primary-color)]'
-                      : 'text-[var(--text-color)] hover:scale-[1.02]'
+                      ? 'bg-[var(--qijia-yellow)] text-[#222222] shadow-md'
+                      : 'text-[#222222] hover:bg-[#f9f9f9]'
                   )}
                 >
-                  <span className={cn('mr-3', isActive ? 'text-[var(--primary-color)]' : 'text-[var(--text-color)]')}>
+                  <span className={cn('mr-3', isActive ? 'text-[#222222]' : 'text-[#666666]')}>
                     {item.icon}
                   </span>
                   {item.label}
@@ -124,11 +140,19 @@ export function Layout({ children, userRole }: LayoutProps) {
             })}
           </div>
         </nav>
+        
+        {/* 返回首页按钮 */}
+        <div className="p-4 border-t border-gray-100">
+          <Link href="/" className="flex items-center px-4 py-2 qijia-text-body text-[#666666] hover:text-[#222222] transition-colors">
+            <HomeIcon />
+            <span className="ml-3">返回首页</span>
+          </Link>
+        </div>
       </div>
 
       {/* 右侧主内容区 */}
       <div className="flex-1 overflow-auto p-4">
-        <main className="neu-card rounded-3xl p-6 h-full overflow-auto">
+        <main className="bg-white rounded-lg shadow-sm p-6 h-full overflow-auto">
           {children}
         </main>
       </div>
