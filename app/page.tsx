@@ -7,25 +7,18 @@ import Link from 'next/link';
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
-      <div className="min-h-screen bg-gradient-yellow flex items-center justify-center p-6">
-        <div className="qijia-container w-full">
-          {/* 品牌标题区域 */}
+      <div className="min-h-screen bg-gradient-yellow flex flex-col items-center justify-center p-6 relative">
+        <div className="qijia-container w-full max-w-6xl">
+          {/* 品牌标题区域 - 移除白色背景，融入主背景 */}
           <div className="text-center mb-16">
-            <div className="inline-block p-8 rounded-lg bg-white shadow-lg mb-8 qijia-card">
-              <h1 className="qijia-title-main text-[var(--ink-black)] mb-4">
-                齐家
-              </h1>
-              <div className="w-16 h-1 bg-[var(--qijia-yellow)] mx-auto mb-4"></div>
-              <p className="qijia-title-sub text-[var(--ink-gray)] mb-2">
-                心理咨询预约平台
-              </p>
-              <p className="qijia-text-body text-[var(--ink-gray)]">
-                以家的名义，守护你所珍视的一切
-              </p>
-            </div>
+            <h1 className="text-6xl font-black text-[var(--ink-black)] mb-6">
+              齐家
+            </h1>
+            <div className="w-32 h-1 bg-[var(--qijia-yellow)] mx-auto"></div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
+          {/* 用户身份选择区域 - 优化布局，使页面更紧凑 */}
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* 来访者入口 */}
             <Card className="qijia-card hover:scale-[1.02] transition-all duration-300">
               <CardHeader>
@@ -105,16 +98,11 @@ export default function HomePage() {
             </Card>
           </div>
 
-          {/* 品牌理念区域 */}
-          <div className="text-center mt-16">
-            <div className="inline-block p-6 rounded-lg bg-white/90 backdrop-blur-sm shadow-md">
-              <p className="qijia-text-body text-[var(--ink-gray)] mb-2">
-                万事齐家，心有所依
-              </p>
-              <p className="qijia-text-helper text-[var(--ink-gray)]">
-                本平台严格遵循心理咨询伦理规范，保护每一位用户的隐私与权益
-              </p>
-            </div>
+          {/* 隐私声明 - 移至右下角 */}
+          <div className="absolute bottom-4 right-6">
+            <p className="qijia-text-helper text-[var(--ink-gray)] text-right">
+              本平台严格遵循心理咨询伦理规范，保护每一位用户的隐私与权益
+            </p>
           </div>
         </div>
       </div>

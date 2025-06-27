@@ -15,6 +15,7 @@ export enum AppointmentStatus {
 // 重复类型枚举
 export enum RepeatType {
   NONE = 'none',
+  DAILY = 'daily',
   WEEKLY = 'weekly',
   BIWEEKLY = 'biweekly'
 }

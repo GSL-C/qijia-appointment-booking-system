@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { Layout } from '@/components/shared/Layout';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { UserRole } from '@/types';
+import { Modal } from '@/components/ui/Modal';
+import { AddTimeSlotForm } from '@/components/AddTimeSlotForm';
+import { UserRole, RepeatType } from '@/types';
 import { mockTimeSlots, mockAppointments, currentCounselor } from '@/lib/mockData';
 import { formatDate, formatTime, formatWeekday, isTimeSlotExpired } from '@/lib/utils';
 import { startOfWeek, addDays, addWeeks, subWeeks, startOfDay, isSameDay } from 'date-fns';
@@ -13,6 +15,9 @@ import Link from 'next/link';
 export default function CounselorSchedulePage() {
   const [currentWeek, setCurrentWeek] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [selectedDateForAdd, setSelectedDateForAdd] = useState<Date | undefined>();
+  const [isSubmittingTimeSlot, setIsSubmittingTimeSlot] = useState(false);
 
   // 获取当前咨询师的时间段
   const counselorTimeSlots = mockTimeSlots.filter(slot => slot.counselorId === currentCounselor.id);
@@ -43,6 +48,34 @@ export default function CounselorSchedulePage() {
 
   const goToCurrentWeek = () => {
     setCurrentWeek(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  };
+
+  const openAddModal = (date?: Date) => {
+    setSelectedDateForAdd(date);
+    setIsAddModalOpen(true);
+  };
+
+  const closeAddModal = () => {
+    setIsAddModalOpen(false);
+    setSelectedDateForAdd(undefined);
+  };
+
+  const handleAddTimeSlot = async (data: {
+    date: string;
+    timeSlots: Array<{ startTime: string; endTime: string }>;
+    isRecurring: boolean;
+    repeatType?: RepeatType;
+    endDate?: string;
+  }) => {
+    setIsSubmittingTimeSlot(true);
+    
+    // 模拟API调用
+    setTimeout(() => {
+      setIsSubmittingTimeSlot(false);
+      console.log('保存时间段:', data);
+      closeAddModal();
+      // 这里可以刷新数据或者更新状态
+    }, 1500);
   };
 
   return (
@@ -80,15 +113,13 @@ export default function CounselorSchedulePage() {
               </button>
             </div>
 
-            {/* 添加周期性空闲按钮 */}
-            <Link href="/counselor/time-slots/add?recurring=true">
-              <Button>
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                添加周期性空闲
-              </Button>
-            </Link>
+            {/* 添加时段按钮 */}
+            <Button onClick={() => openAddModal()}>
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              添加时段
+            </Button>
           </div>
         </div>
 
@@ -158,9 +189,9 @@ export default function CounselorSchedulePage() {
                               key={slot.id}
                               className={`p-2 rounded text-xs ${
                                 appointment
-                                  ? 'bg-[rgba(246,204,108,0.2)] border border-[rgba(246,204,108,0.4)] text-[var(--ink-black)]'
+                                  ? 'bg-[#F1C232] border border-[#E6B800] text-[var(--ink-black)]'
                                   : slot.isAvailable
-                                    ? 'bg-[rgba(246,204,108,0.1)] border border-[rgba(246,204,108,0.2)] text-[var(--ink-black)]'
+                                    ? 'bg-[rgba(246,204,108,0.15)] border border-[rgba(246,204,108,0.3)] text-[var(--ink-black)]'
                                     : 'bg-gray-100 border border-gray-200 text-gray-600'
                               } ${isExpired ? 'opacity-50' : ''}`}
                             >
@@ -186,14 +217,15 @@ export default function CounselorSchedulePage() {
 
                         {/* 添加时间段按钮 */}
                         {!isPast && (
-                          <Link href={`/counselor/time-slots/add?date=${day.toISOString()}`}>
-                            <button className="w-full p-2 border-2 border-dashed border-gray-300 rounded text-[var(--ink-gray)] hover:border-[var(--qijia-yellow)] hover:text-[var(--qijia-yellow)] text-xs transition-colors">
-                              <svg className="w-4 h-4 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                              </svg>
-                              添加时段
-                            </button>
-                          </Link>
+                          <button 
+                            onClick={() => openAddModal(day)}
+                            className="w-full p-2 border-2 border-dashed border-gray-300 rounded text-[var(--ink-gray)] hover:border-[var(--qijia-yellow)] hover:text-[var(--qijia-yellow)] text-xs transition-colors"
+                          >
+                            <svg className="w-4 h-4 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            添加时段
+                          </button>
                         )}
                       </div>
                     </div>
@@ -273,6 +305,21 @@ export default function CounselorSchedulePage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* 添加时段弹窗 */}
+        <Modal
+          isOpen={isAddModalOpen}
+          onClose={closeAddModal}
+          title="添加开放时段"
+          size="lg"
+        >
+          <AddTimeSlotForm
+            initialDate={selectedDateForAdd}
+            onSubmit={handleAddTimeSlot}
+            onCancel={closeAddModal}
+            isSubmitting={isSubmittingTimeSlot}
+          />
+        </Modal>
       </div>
     </Layout>
   );
