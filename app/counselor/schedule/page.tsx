@@ -47,23 +47,23 @@ export default function CounselorSchedulePage() {
 
   return (
     <Layout userRole={UserRole.COUNSELOR}>
-      <div className="space-y-6">
+      <div className="space-y-6 bg-gradient-yellow p-6 rounded-lg">
         {/* 页面标题和工具栏 */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">我的日程</h1>
-            <p className="text-gray-600 mt-1">管理您的开放时间和预约</p>
+            <h1 className="qijia-title-sub text-[var(--ink-black)]">我的日程</h1>
+            <p className="qijia-text-helper text-[var(--ink-gray)] mt-1">管理您的开放时间和预约</p>
           </div>
           
           <div className="flex items-center space-x-4">
             {/* 视图切换 */}
-            <div className="flex border border-gray-300 rounded-lg">
+            <div className="flex border border-gray-200 rounded-lg shadow-sm">
               <button
                 onClick={() => setViewMode('week')}
                 className={`px-4 py-2 text-sm font-medium rounded-l-lg ${
                   viewMode === 'week'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                    ? 'bg-[var(--qijia-yellow)] text-[var(--ink-black)]'
+                    : 'bg-white text-[var(--ink-gray)] hover:bg-[var(--hu-powder-white)]'
                 }`}
               >
                 周视图
@@ -72,8 +72,8 @@ export default function CounselorSchedulePage() {
                 onClick={() => setViewMode('month')}
                 className={`px-4 py-2 text-sm font-medium rounded-r-lg border-l ${
                   viewMode === 'month'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                    ? 'bg-[var(--qijia-yellow)] text-[var(--ink-black)]'
+                    : 'bg-white text-[var(--ink-gray)] hover:bg-[var(--hu-powder-white)]'
                 }`}
               >
                 月视图
@@ -94,26 +94,26 @@ export default function CounselorSchedulePage() {
 
         {/* 周视图 */}
         {viewMode === 'week' && (
-          <Card>
+          <Card className="qijia-card">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <button
                     onClick={() => navigateWeek('prev')}
-                    className="p-2 hover:bg-gray-100 rounded-lg"
+                    className="p-2 hover:bg-[var(--hu-powder-white)] rounded-lg transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
                   
-                  <h2 className="text-lg font-semibold text-gray-900">
+                  <h2 className="qijia-text-body font-medium text-[var(--ink-black)]">
                     {formatDate(weekDays[0])} - {formatDate(weekDays[6])}
                   </h2>
                   
                   <button
                     onClick={() => navigateWeek('next')}
-                    className="p-2 hover:bg-gray-100 rounded-lg"
+                    className="p-2 hover:bg-[var(--hu-powder-white)] rounded-lg transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -127,6 +127,8 @@ export default function CounselorSchedulePage() {
               </div>
             </CardHeader>
             
+            <div className="qijia-divider mx-8"></div>
+            
             <CardContent>
               <div className="grid grid-cols-7 gap-4">
                 {weekDays.map((day, index) => {
@@ -138,9 +140,9 @@ export default function CounselorSchedulePage() {
                   return (
                     <div key={index} className={`min-h-[300px] ${isPast ? 'opacity-50' : ''}`}>
                       {/* 日期标题 */}
-                      <div className={`text-center mb-3 ${isToday ? 'text-blue-600 font-semibold' : 'text-gray-700'}`}>
+                      <div className={`text-center mb-3 ${isToday ? 'text-[var(--qijia-yellow)] font-semibold' : 'text-[var(--ink-gray)]'}`}>
                         <div className="text-sm">{formatWeekday(day).slice(2)}</div>
-                        <div className={`text-lg ${isToday ? 'bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto' : ''}`}>
+                        <div className={`text-lg ${isToday ? 'bg-[var(--qijia-yellow)] text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto' : ''}`}>
                           {day.getDate()}
                         </div>
                       </div>
@@ -156,9 +158,9 @@ export default function CounselorSchedulePage() {
                               key={slot.id}
                               className={`p-2 rounded text-xs ${
                                 appointment
-                                  ? 'bg-blue-100 border border-blue-200 text-blue-800'
+                                  ? 'bg-[rgba(246,204,108,0.2)] border border-[rgba(246,204,108,0.4)] text-[var(--ink-black)]'
                                   : slot.isAvailable
-                                    ? 'bg-green-100 border border-green-200 text-green-800'
+                                    ? 'bg-[rgba(246,204,108,0.1)] border border-[rgba(246,204,108,0.2)] text-[var(--ink-black)]'
                                     : 'bg-gray-100 border border-gray-200 text-gray-600'
                               } ${isExpired ? 'opacity-50' : ''}`}
                             >
@@ -185,7 +187,7 @@ export default function CounselorSchedulePage() {
                         {/* 添加时间段按钮 */}
                         {!isPast && (
                           <Link href={`/counselor/time-slots/add?date=${day.toISOString()}`}>
-                            <button className="w-full p-2 border-2 border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 hover:text-blue-600 text-xs">
+                            <button className="w-full p-2 border-2 border-dashed border-gray-300 rounded text-[var(--ink-gray)] hover:border-[var(--qijia-yellow)] hover:text-[var(--qijia-yellow)] text-xs transition-colors">
                               <svg className="w-4 h-4 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                               </svg>
@@ -204,30 +206,30 @@ export default function CounselorSchedulePage() {
 
         {/* 月视图占位 */}
         {viewMode === 'month' && (
-          <Card>
+          <Card className="qijia-card">
             <CardContent className="p-12 text-center">
-              <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-16 h-16 text-[var(--qijia-yellow)] mx-auto mb-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">月视图</h3>
-              <p className="text-gray-600">月视图功能正在开发中</p>
+              <h3 className="qijia-text-body font-medium text-[var(--ink-black)] mb-2">月视图</h3>
+              <p className="qijia-text-helper text-[var(--ink-gray)]">月视图功能正在开发中</p>
             </CardContent>
           </Card>
         )}
 
         {/* 统计信息 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
+          <Card className="qijia-card">
             <CardContent className="p-6">
               <div className="flex items-center">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-12 h-12 bg-[rgba(246,204,108,0.2)] rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-[var(--qijia-yellow)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">开放时段</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-sm font-medium text-[var(--ink-gray)]">开放时段</p>
+                  <p className="text-2xl font-bold text-[var(--ink-black)]">
                     {counselorTimeSlots.filter(slot => slot.isAvailable && !isTimeSlotExpired(slot)).length}
                   </p>
                 </div>
@@ -235,17 +237,17 @@ export default function CounselorSchedulePage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="qijia-card">
             <CardContent className="p-6">
               <div className="flex items-center">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-12 h-12 bg-[rgba(246,204,108,0.2)] rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-[var(--qijia-yellow)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">已预约</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-sm font-medium text-[var(--ink-gray)]">已预约</p>
+                  <p className="text-2xl font-bold text-[var(--ink-black)]">
                     {counselorAppointments.filter(apt => apt.status === 'confirmed').length}
                   </p>
                 </div>
@@ -253,18 +255,18 @@ export default function CounselorSchedulePage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="qijia-card">
             <CardContent className="p-6">
               <div className="flex items-center">
-                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                <div className="w-12 h-12 bg-[rgba(246,204,108,0.2)] rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-[var(--qijia-yellow)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">待确认</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {counselorAppointments.filter(apt => apt.status === 'pending').length}
+                  <p className="text-sm font-medium text-[var(--ink-gray)]">来访者</p>
+                  <p className="text-2xl font-bold text-[var(--ink-black)]">
+                    {new Set(counselorAppointments.map(apt => apt.visitorId)).size}
                   </p>
                 </div>
               </div>
