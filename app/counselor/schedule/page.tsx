@@ -14,10 +14,15 @@ import Link from 'next/link';
 
 export default function CounselorSchedulePage() {
   const [currentWeek, setCurrentWeek] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
-  const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedDateForAdd, setSelectedDateForAdd] = useState<Date | undefined>();
   const [isSubmittingTimeSlot, setIsSubmittingTimeSlot] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedSlotForDelete, setSelectedSlotForDelete] = useState<any>(null);
+  const [isDeletingTimeSlot, setIsDeletingTimeSlot] = useState(false);
+  const [isRecurringDelete, setIsRecurringDelete] = useState(false);
+  const [deleteRepeatType, setDeleteRepeatType] = useState<RepeatType>(RepeatType.WEEKLY);
+  const [deleteEndDate, setDeleteEndDate] = useState('');
 
   // 获取当前咨询师的时间段
   const counselorTimeSlots = mockTimeSlots.filter(slot => slot.counselorId === currentCounselor.id);
@@ -78,6 +83,47 @@ export default function CounselorSchedulePage() {
     }, 1500);
   };
 
+  const openDeleteModal = (slot: any) => {
+    setSelectedSlotForDelete(slot);
+    setIsDeleteModalOpen(true);
+    // 重置删除选项
+    setIsRecurringDelete(false);
+    setDeleteRepeatType(RepeatType.WEEKLY);
+    setDeleteEndDate('');
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setSelectedSlotForDelete(null);
+    setIsRecurringDelete(false);
+    setDeleteRepeatType(RepeatType.WEEKLY);
+    setDeleteEndDate('');
+  };
+
+  const handleDeleteTimeSlot = async () => {
+    if (!selectedSlotForDelete) return;
+    
+    if (isRecurringDelete && !deleteEndDate) {
+      alert('请选择重复删除的结束日期');
+      return;
+    }
+    
+    setIsDeletingTimeSlot(true);
+    
+    // 模拟API调用
+    setTimeout(() => {
+      setIsDeletingTimeSlot(false);
+      console.log('删除时间段:', {
+        slotId: selectedSlotForDelete.id,
+        isRecurring: isRecurringDelete,
+        repeatType: isRecurringDelete ? deleteRepeatType : RepeatType.NONE,
+        endDate: isRecurringDelete ? deleteEndDate : undefined
+      });
+      closeDeleteModal();
+      // 这里可以刷新数据或者更新状态
+    }, 1000);
+  };
+
   return (
     <Layout userRole={UserRole.COUNSELOR}>
       <div className="space-y-6 bg-gradient-yellow p-6 rounded-lg">
@@ -89,30 +135,6 @@ export default function CounselorSchedulePage() {
           </div>
           
           <div className="flex items-center space-x-4">
-            {/* 视图切换 */}
-            <div className="flex border border-gray-200 rounded-lg shadow-sm">
-              <button
-                onClick={() => setViewMode('week')}
-                className={`px-4 py-2 text-sm font-medium rounded-l-lg ${
-                  viewMode === 'week'
-                    ? 'bg-[var(--qijia-yellow)] text-[var(--ink-black)]'
-                    : 'bg-white text-[var(--ink-gray)] hover:bg-[var(--hu-powder-white)]'
-                }`}
-              >
-                周视图
-              </button>
-              <button
-                onClick={() => setViewMode('month')}
-                className={`px-4 py-2 text-sm font-medium rounded-r-lg border-l ${
-                  viewMode === 'month'
-                    ? 'bg-[var(--qijia-yellow)] text-[var(--ink-black)]'
-                    : 'bg-white text-[var(--ink-gray)] hover:bg-[var(--hu-powder-white)]'
-                }`}
-              >
-                月视图
-              </button>
-            </div>
-
             {/* 添加时段按钮 */}
             <Button onClick={() => openAddModal()}>
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,8 +146,7 @@ export default function CounselorSchedulePage() {
         </div>
 
         {/* 周视图 */}
-        {viewMode === 'week' && (
-          <Card className="qijia-card">
+        <Card className="qijia-card">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
@@ -183,17 +204,19 @@ export default function CounselorSchedulePage() {
                         {daySlots.map(slot => {
                           const appointment = dayAppointments.find(apt => apt.timeSlot.id === slot.id);
                           const isExpired = isTimeSlotExpired(slot);
+                          const canDelete = slot.isAvailable && !appointment && !isExpired;
                           
                           return (
                             <div
                               key={slot.id}
-                              className={`p-2 rounded text-xs ${
+                              className={`p-2 rounded text-xs relative group ${
                                 appointment
                                   ? 'bg-[#F1C232] border border-[#E6B800] text-[var(--ink-black)]'
                                   : slot.isAvailable
-                                    ? 'bg-[rgba(246,204,108,0.15)] border border-[rgba(246,204,108,0.3)] text-[var(--ink-black)]'
+                                    ? 'bg-[rgba(246,204,108,0.15)] border border-[rgba(246,204,108,0.3)] text-[var(--ink-black)] hover:bg-[rgba(246,204,108,0.25)] cursor-pointer'
                                     : 'bg-gray-100 border border-gray-200 text-gray-600'
                               } ${isExpired ? 'opacity-50' : ''}`}
+                              onClick={canDelete ? () => openDeleteModal(slot) : undefined}
                             >
                               <div className="font-medium">
                                 {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
@@ -203,8 +226,24 @@ export default function CounselorSchedulePage() {
                                   已预约
                                 </div>
                               ) : slot.isAvailable ? (
-                                <div className="text-xs mt-1">
-                                  开放预约
+                                <div className="flex items-center justify-between">
+                                  <div className="text-xs mt-1">
+                                    开放预约
+                                  </div>
+                                  {canDelete && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        openDeleteModal(slot);
+                                      }}
+                                      className="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-700 p-1"
+                                      title="删除时间段"
+                                    >
+                                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                      </svg>
+                                    </button>
+                                  )}
                                 </div>
                               ) : (
                                 <div className="text-xs mt-1">
@@ -234,20 +273,6 @@ export default function CounselorSchedulePage() {
               </div>
             </CardContent>
           </Card>
-        )}
-
-        {/* 月视图占位 */}
-        {viewMode === 'month' && (
-          <Card className="qijia-card">
-            <CardContent className="p-12 text-center">
-              <svg className="w-16 h-16 text-[var(--qijia-yellow)] mx-auto mb-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <h3 className="qijia-text-body font-medium text-[var(--ink-black)] mb-2">月视图</h3>
-              <p className="qijia-text-helper text-[var(--ink-gray)]">月视图功能正在开发中</p>
-            </CardContent>
-          </Card>
-        )}
 
         {/* 统计信息 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -320,6 +345,131 @@ export default function CounselorSchedulePage() {
             isSubmitting={isSubmittingTimeSlot}
           />
         </Modal>
+
+                 {/* 删除时段弹窗 */}
+         <Modal
+           isOpen={isDeleteModalOpen}
+           onClose={closeDeleteModal}
+           title="删除时间段"
+           size="md"
+         >
+           <div className="p-6 space-y-6">
+             <div className="text-center">
+               <svg className="w-12 h-12 text-red-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+               </svg>
+               <h3 className="qijia-text-body font-medium text-[var(--ink-black)] mb-2">
+                 确认删除时间段
+               </h3>
+               {selectedSlotForDelete && (
+                 <div className="bg-gray-50 p-3 rounded-lg mb-4">
+                   <p className="qijia-text-body text-[var(--ink-black)] font-medium">
+                     {formatTime(selectedSlotForDelete.startTime)} - {formatTime(selectedSlotForDelete.endTime)}
+                   </p>
+                   <p className="qijia-text-helper text-[var(--ink-gray)] mt-1">
+                     {formatDate(selectedSlotForDelete.startTime)}
+                   </p>
+                 </div>
+               )}
+             </div>
+
+             {/* 删除选项 */}
+             <div>
+               <label className="qijia-text-body font-medium text-[var(--ink-black)] mb-3 block">
+                 删除选项
+               </label>
+               
+               <div className="space-y-3">
+                 <div className="flex items-center">
+                   <input
+                     type="radio"
+                     id="deleteOnce"
+                     name="deleteOption"
+                     className="h-4 w-4 text-[var(--qijia-yellow)] focus:ring-[var(--qijia-yellow)] border-gray-300"
+                     checked={!isRecurringDelete}
+                     onChange={() => setIsRecurringDelete(false)}
+                   />
+                   <label htmlFor="deleteOnce" className="ml-2 qijia-text-body text-[var(--ink-black)]">
+                     仅删除这一个时间段
+                   </label>
+                 </div>
+
+                 <div className="flex items-center">
+                   <input
+                     type="radio"
+                     id="deleteRecurring"
+                     name="deleteOption"
+                     className="h-4 w-4 text-[var(--qijia-yellow)] focus:ring-[var(--qijia-yellow)] border-gray-300"
+                     checked={isRecurringDelete}
+                     onChange={() => setIsRecurringDelete(true)}
+                   />
+                   <label htmlFor="deleteRecurring" className="ml-2 qijia-text-body text-[var(--ink-black)]">
+                     周期性删除相同时间段
+                   </label>
+                 </div>
+
+                 {isRecurringDelete && (
+                   <div className="pl-6 space-y-3 border-l-2 border-red-300 border-opacity-50">
+                     <div className="grid grid-cols-2 gap-3">
+                       <div>
+                         <label className="block qijia-text-helper text-[var(--ink-gray)] mb-1">
+                           删除频率
+                         </label>
+                         <select
+                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                           value={deleteRepeatType}
+                           onChange={(e) => setDeleteRepeatType(e.target.value as RepeatType)}
+                         >
+                           <option value={RepeatType.DAILY}>每天相同时段</option>
+                           <option value={RepeatType.WEEKLY}>每周相同时段</option>
+                           <option value={RepeatType.BIWEEKLY}>每两周相同时段</option>
+                         </select>
+                       </div>
+
+                       <div>
+                         <label className="block qijia-text-helper text-[var(--ink-gray)] mb-1">
+                           删除截止日期
+                         </label>
+                         <input
+                           type="date"
+                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                           value={deleteEndDate}
+                           onChange={(e) => setDeleteEndDate(e.target.value)}
+                           min={selectedSlotForDelete ? selectedSlotForDelete.startTime.toISOString().split('T')[0] : ''}
+                         />
+                       </div>
+                     </div>
+
+                     <div className="qijia-text-helper text-red-600 bg-red-50 p-2 rounded-lg">
+                       <svg className="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                       </svg>
+                       这将删除未来所有匹配的时间段，已预约的时段不会被删除
+                     </div>
+                   </div>
+                 )}
+               </div>
+             </div>
+
+             <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
+               <p className="qijia-text-helper text-yellow-800">
+                 <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                 </svg>
+                 删除后无法恢复，请仔细确认您的选择。
+               </p>
+             </div>
+
+             <div className="flex justify-center space-x-4">
+               <Button variant="outline" onClick={closeDeleteModal} disabled={isDeletingTimeSlot}>
+                 取消
+               </Button>
+               <Button variant="danger" onClick={handleDeleteTimeSlot} loading={isDeletingTimeSlot}>
+                 确认删除
+               </Button>
+             </div>
+           </div>
+         </Modal>
       </div>
     </Layout>
   );

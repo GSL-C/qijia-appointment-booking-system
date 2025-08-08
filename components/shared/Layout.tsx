@@ -103,21 +103,36 @@ export function Layout({ children, userRole }: LayoutProps) {
     <div className="flex h-screen bg-[var(--hu-powder-white)]">
       {/* 左侧导航栏 */}
       <div className="w-64 bg-white shadow-lg m-4 rounded-lg overflow-hidden">
-        <div className="p-6 border-b border-gray-100">
+        <div className="p-8 border-b border-gray-100">
           {/* 齐家品牌标志 */}
-          <div className="text-center mb-4">
-            <div className="inline-flex items-center justify-center w-12 h-12 mb-2">
-              <img src="/qijia-logo.svg" alt="齐家" className="w-12 h-12" />
+          <div className="text-center mb-8">
+            <div className="inline-block mb-6">
+              <img 
+                src="/qijia-logo.svg?v=2" 
+                alt="齐家 AI 家庭心理教练" 
+                className="w-24 h-24 drop-shadow-lg transition-transform duration-200 hover:scale-105" 
+                onLoad={() => console.log('Logo loaded successfully')}
+                onError={(e) => {
+                  console.error('Logo failed to load:', e);
+                  // Fallback to gradient background if SVG fails
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  target.nextElementSibling?.classList.remove('hidden');
+                }}
+              />
+              <div className="w-24 h-24 bg-gradient-to-br from-[var(--qijia-yellow)] to-[#f4c861] rounded-2xl flex items-center justify-center shadow-lg hidden">
+                <span className="text-3xl font-bold text-[var(--ink-black)]">齐</span>
+              </div>
             </div>
-            <h1 className="qijia-title-sub text-[var(--ink-black)]">齐家</h1>
+            <p className="text-lg font-medium text-[var(--ink-black)] mb-2">AI 家庭心理教练</p>
+            <p className="text-sm text-[var(--ink-gray)]">
+              {userRole === UserRole.VISITOR ? '来访者服务台' : '咨询师工作台'}
+            </p>
           </div>
-          <p className="qijia-text-helper text-center text-[var(--ink-gray)]">
-            {userRole === UserRole.VISITOR ? '来访者服务台' : '咨询师工作台'}
-          </p>
         </div>
         
-        <nav className="mt-4">
-          <div className="space-y-2 px-4 pb-6">
+        <nav className="mt-6">
+          <div className="space-y-3 px-6 pb-8">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
@@ -125,13 +140,13 @@ export function Layout({ children, userRole }: LayoutProps) {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'flex items-center px-4 py-3 qijia-text-body rounded-lg transition-all duration-200',
+                    'flex items-center px-6 py-4 qijia-text-body rounded-xl transition-all duration-300 transform hover:scale-102',
                     isActive
-                      ? 'bg-[var(--qijia-yellow)] text-[#222222] shadow-md'
-                      : 'text-[#222222] hover:bg-[#f9f9f9]'
+                      ? 'bg-[var(--qijia-yellow)] text-[#222222] shadow-lg'
+                      : 'text-[#222222] hover:bg-[#f9f9f9] hover:shadow-md'
                   )}
                 >
-                  <span className={cn('mr-3', isActive ? 'text-[#222222]' : 'text-[#666666]')}>
+                  <span className={cn('mr-4', isActive ? 'text-[#222222]' : 'text-[#666666]')}>
                     {item.icon}
                   </span>
                   {item.label}
@@ -142,10 +157,10 @@ export function Layout({ children, userRole }: LayoutProps) {
         </nav>
         
         {/* 返回首页按钮 */}
-        <div className="p-4 border-t border-gray-100">
-          <Link href="/" className="flex items-center px-4 py-2 qijia-text-body text-[#666666] hover:text-[#222222] transition-colors">
+        <div className="p-6 border-t border-gray-100">
+          <Link href="/" className="flex items-center px-6 py-3 qijia-text-body text-[#666666] hover:text-[#222222] transition-all duration-200 rounded-lg hover:bg-[#f9f9f9]">
             <HomeIcon />
-            <span className="ml-3">返回首页</span>
+            <span className="ml-4">返回首页</span>
           </Link>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import AuthCard from '@/components/AuthCard';
 import Link from 'next/link';
 
 export default function HomePage() {
@@ -10,11 +11,18 @@ export default function HomePage() {
       <div className="min-h-screen bg-gradient-yellow flex flex-col items-center justify-center p-6 relative">
         <div className="qijia-container w-full max-w-6xl">
           {/* 品牌标题区域 - 移除白色背景，融入主背景 */}
-          <div className="text-center mb-16">
+          <div className="text-center mb-12">
             <h1 className="text-6xl font-black text-[var(--ink-black)] mb-6">
               齐家
             </h1>
             <div className="w-32 h-1 bg-[var(--qijia-yellow)] mx-auto"></div>
+          </div>
+
+          {/* 登录/注册卡片 */}
+          <div className="auth-card-container mb-16 flex justify-center px-4 sm:px-0">
+            <div className="w-full max-w-md">
+              <AuthCard />
+            </div>
           </div>
 
           {/* 用户身份选择区域 - 优化布局，使页面更紧凑 */}
