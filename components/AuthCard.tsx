@@ -111,7 +111,7 @@ export default function AuthCard() {
           }
         }, 1500);
       }
-    } catch (error) {
+    } catch {
       setErrorMessage(authMode === 'login' ? '登录失败，请检查邮箱和密码' : '注册失败，请稍后重试');
     } finally {
       setIsLoading(false);

@@ -3,6 +3,7 @@
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { UserRole } from '@/types';
 
@@ -107,12 +108,14 @@ export function Layout({ children, userRole }: LayoutProps) {
           {/* 齐家品牌标志 */}
           <div className="text-center mb-8">
             <div className="inline-block mb-6">
-              <img 
+              <Image 
                 src="/qijia-logo.svg?v=2" 
                 alt="齐家 AI 家庭心理教练" 
-                className="w-24 h-24 drop-shadow-lg transition-transform duration-200 hover:scale-105" 
+                width={96}
+                height={96}
+                className="drop-shadow-lg transition-transform duration-200 hover:scale-105" 
                 onLoad={() => console.log('Logo loaded successfully')}
-                onError={(e) => {
+                onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
                   console.error('Logo failed to load:', e);
                   // Fallback to gradient background if SVG fails
                   const target = e.target as HTMLImageElement;

@@ -10,7 +10,6 @@ import { UserRole, RepeatType } from '@/types';
 import { mockTimeSlots, mockAppointments, currentCounselor } from '@/lib/mockData';
 import { formatDate, formatTime, formatWeekday, isTimeSlotExpired } from '@/lib/utils';
 import { startOfWeek, addDays, addWeeks, subWeeks, startOfDay, isSameDay } from 'date-fns';
-import Link from 'next/link';
 
 export default function CounselorSchedulePage() {
   const [currentWeek, setCurrentWeek] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
@@ -18,7 +17,12 @@ export default function CounselorSchedulePage() {
   const [selectedDateForAdd, setSelectedDateForAdd] = useState<Date | undefined>();
   const [isSubmittingTimeSlot, setIsSubmittingTimeSlot] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedSlotForDelete, setSelectedSlotForDelete] = useState<any>(null);
+  const [selectedSlotForDelete, setSelectedSlotForDelete] = useState<{
+    id: string;
+    startTime: Date;
+    endTime: Date;
+    isAvailable: boolean;
+  } | null>(null);
   const [isDeletingTimeSlot, setIsDeletingTimeSlot] = useState(false);
   const [isRecurringDelete, setIsRecurringDelete] = useState(false);
   const [deleteRepeatType, setDeleteRepeatType] = useState<RepeatType>(RepeatType.WEEKLY);
@@ -83,7 +87,12 @@ export default function CounselorSchedulePage() {
     }, 1500);
   };
 
-  const openDeleteModal = (slot: any) => {
+  const openDeleteModal = (slot: {
+    id: string;
+    startTime: Date;
+    endTime: Date;
+    isAvailable: boolean;
+  }) => {
     setSelectedSlotForDelete(slot);
     setIsDeleteModalOpen(true);
     // 重置删除选项
