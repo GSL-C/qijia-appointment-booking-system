@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { registerUser, loginUser } from '@/lib/api/auth';
+import { useRouter } from 'next/navigation';
 
 type UserRole = 'counselor' | 'visitor';
 type AuthMode = 'login' | 'register';
@@ -12,21 +14,28 @@ interface FormData {
   password: string;
   confirmPassword: string;
   role: UserRole;
+  name: string;
+  phone: string;
 }
 
 interface FormErrors {
   email?: string;
   password?: string;
   confirmPassword?: string;
+  name?: string;
+  phone?: string;
 }
 
 export default function AuthCard() {
+  const router = useRouter();
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'visitor'
+    role: 'visitor',
+    name: '',
+    phone: ''
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -46,6 +55,12 @@ export default function AuthCard() {
     return password.length >= 8 && hasLetter && hasNumber;
   };
 
+  // 手机号格式验证
+  const validatePhone = (phone: string): boolean => {
+    const phoneRegex = /^1[3-9]\d{9}$/;
+    return phoneRegex.test(phone);
+  };
+
   // 表单验证
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -63,6 +78,16 @@ export default function AuthCard() {
     }
 
     if (authMode === 'register') {
+      if (!formData.name) {
+        newErrors.name = '请输入姓名';
+      } else if (formData.name.length < 2) {
+        newErrors.name = '姓名至少2个字符';
+      }
+
+      if (formData.phone && !validatePhone(formData.phone)) {
+        newErrors.phone = '请输入正确的手机号';
+      }
+
       if (!formData.confirmPassword) {
         newErrors.confirmPassword = '请确认密码';
       } else if (formData.password !== formData.confirmPassword) {
@@ -87,32 +112,81 @@ export default function AuthCard() {
     setIsLoading(true);
 
     try {
-      // 模拟API调用
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       if (authMode === 'login') {
-        setSuccessMessage('登录成功！正在跳转...');
-        // 模拟登录成功后跳转
-        setTimeout(() => {
-          if (formData.role === 'counselor') {
-            window.location.href = '/counselor/schedule';
-          } else {
-            window.location.href = '/visitor/counselors';
-          }
-        }, 1500);
+        // 登录
+        const result = await loginUser({
+          email: formData.email,
+          password: formData.password
+        });
+
+        if (result.success) {
+          setSuccessMessage('登录成功！正在跳转...');
+          
+          // 根据用户角色跳转
+          setTimeout(() => {
+            if (result.data?.user.role === 'counselor') {
+              router.push('/counselor/schedule');
+            } else {
+              router.push('/visitor/counselors');
+            }
+          }, 1000);
+        } else {
+          setErrorMessage(result.error || '登录失败，请检查邮箱和密码');
+        }
       } else {
-        setSuccessMessage('注册成功！正在自动登录...');
-        // 注册成功后自动登录
-        setTimeout(() => {
-          if (formData.role === 'counselor') {
-            window.location.href = '/counselor/schedule';
-          } else {
-            window.location.href = '/visitor/counselors';
-          }
-        }, 1500);
+        // 注册
+        const registerData = {
+          email: formData.email,
+          password: formData.password,
+          name: formData.name,
+          role: formData.role,
+          phone: formData.phone || undefined,
+          ...(formData.role === 'counselor' && {
+            counselorInfo: {
+              bio: '请完善您的个人简介...',
+              gender: '女' as const,
+              specialties: [], // 注册后可以在设置中选择专业领域
+              qualification: '',
+              experience_years: 0,
+              consultation_fee: 0
+            }
+          })
+        };
+
+        const result = await registerUser(registerData);
+
+        if (result.success) {
+          setSuccessMessage('注册成功！正在自动登录...');
+          
+          // 注册成功后自动登录
+          setTimeout(async () => {
+            const loginResult = await loginUser({
+              email: formData.email,
+              password: formData.password
+            });
+
+            if (loginResult.success) {
+              if (formData.role === 'counselor') {
+                router.push('/counselor/settings'); // 咨询师注册后先完善资料
+              } else {
+                router.push('/visitor/counselors');
+              }
+            } else {
+              setErrorMessage('注册成功但自动登录失败，请手动登录');
+              setAuthMode('login');
+            }
+          }, 1000);
+        } else {
+          setErrorMessage(result.error || '注册失败，请稍后重试');
+        }
       }
-    } catch {
-      setErrorMessage(authMode === 'login' ? '登录失败，请检查邮箱和密码' : '注册失败，请稍后重试');
+    } catch (error: any) {
+      setErrorMessage(
+        authMode === 'login' 
+          ? '登录失败，请检查网络连接' 
+          : '注册失败，请检查网络连接'
+      );
+      console.error('Auth error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -126,7 +200,9 @@ export default function AuthCard() {
     setSuccessMessage('');
     setFormData({
       ...formData,
-      confirmPassword: ''
+      confirmPassword: '',
+      name: '',
+      phone: ''
     });
   };
 
@@ -159,38 +235,78 @@ export default function AuthCard() {
                 选择身份
               </label>
               <div className="grid grid-cols-2 gap-2">
-                                 <button
-                   type="button"
-                   onClick={() => setFormData({...formData, role: 'visitor'})}
-                   className={`auth-role-button p-3 rounded-lg border-2 transition-all duration-200 ${
-                     formData.role === 'visitor'
-                       ? 'border-[var(--qijia-yellow)] bg-[var(--qijia-yellow)] bg-opacity-10 text-[var(--ink-black)]'
-                       : 'border-gray-200 hover:border-gray-300'
-                   }`}
-                 >
-                   <div className="text-sm font-medium">来访者</div>
-                   <div className="text-xs text-gray-500">寻求咨询服务</div>
-                 </button>
-                 <button
-                   type="button"
-                   onClick={() => setFormData({...formData, role: 'counselor'})}
-                   className={`auth-role-button p-3 rounded-lg border-2 transition-all duration-200 ${
-                     formData.role === 'counselor'
-                       ? 'border-[var(--qijia-yellow)] bg-[var(--qijia-yellow)] bg-opacity-10 text-[var(--ink-black)]'
-                       : 'border-gray-200 hover:border-gray-300'
-                   }`}
-                 >
-                   <div className="text-sm font-medium">咨询师</div>
-                   <div className="text-xs text-gray-500">提供咨询服务</div>
-                 </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({...formData, role: 'visitor'})}
+                  className={`auth-role-button p-3 rounded-lg border-2 transition-all duration-200 ${
+                    formData.role === 'visitor'
+                      ? 'border-[var(--qijia-yellow)] bg-[var(--qijia-yellow)] bg-opacity-10 text-[var(--ink-black)]'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="text-sm font-medium">来访者</div>
+                  <div className="text-xs text-gray-500">寻求咨询服务</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({...formData, role: 'counselor'})}
+                  className={`auth-role-button p-3 rounded-lg border-2 transition-all duration-200 ${
+                    formData.role === 'counselor'
+                      ? 'border-[var(--qijia-yellow)] bg-[var(--qijia-yellow)] bg-opacity-10 text-[var(--ink-black)]'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="text-sm font-medium">咨询师</div>
+                  <div className="text-xs text-gray-500">提供咨询服务</div>
+                </button>
               </div>
+            </div>
+          )}
+
+          {/* 姓名输入 - 仅在注册时显示 */}
+          {authMode === 'register' && (
+            <div>
+              <label className="block text-sm font-medium text-[var(--ink-black)] mb-1">
+                姓名 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                className={`neu-input w-full ${errors.name ? 'border-red-500' : ''}`}
+                placeholder="请输入您的真实姓名"
+                disabled={isLoading}
+              />
+              {errors.name && (
+                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+              )}
+            </div>
+          )}
+
+          {/* 手机号输入 - 仅在注册时显示 */}
+          {authMode === 'register' && (
+            <div>
+              <label className="block text-sm font-medium text-[var(--ink-black)] mb-1">
+                手机号 <span className="text-gray-400">(可选)</span>
+              </label>
+              <input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                className={`neu-input w-full ${errors.phone ? 'border-red-500' : ''}`}
+                placeholder="请输入您的手机号"
+                disabled={isLoading}
+              />
+              {errors.phone && (
+                <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+              )}
             </div>
           )}
 
           {/* 邮箱输入 */}
           <div>
             <label className="block text-sm font-medium text-[var(--ink-black)] mb-1">
-              邮箱
+              邮箱 <span className="text-red-500">*</span>
             </label>
             <input
               type="email"
@@ -208,7 +324,7 @@ export default function AuthCard() {
           {/* 密码输入 */}
           <div>
             <label className="block text-sm font-medium text-[var(--ink-black)] mb-1">
-              密码
+              密码 <span className="text-red-500">*</span>
             </label>
             <input
               type="password"
@@ -227,7 +343,7 @@ export default function AuthCard() {
           {authMode === 'register' && (
             <div>
               <label className="block text-sm font-medium text-[var(--ink-black)] mb-1">
-                确认密码
+                确认密码 <span className="text-red-500">*</span>
               </label>
               <input
                 type="password"

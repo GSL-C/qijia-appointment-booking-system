@@ -35,7 +35,7 @@ export default function CounselorsPage() {
       <div className="space-y-6">
         {/* 页面标题 */}
         <div className="border-b border-gray-100 pb-4">
-          <h1 className="qijia-title-sub text-[#222222]">专业咨询师</h1>
+          <h1 className="qijia-title-sub] text-[#222222">专业咨询师</h1>
           <p className="qijia-text-body text-[#333333] mt-2">寻找适合的心理咨询师，开启心灵对话</p>
         </div>
 

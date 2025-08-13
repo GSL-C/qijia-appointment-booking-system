@@ -6,7 +6,6 @@ export const metadata: Metadata = {
   description: "以家的名义，守护你所珍视的一切。专业的心理健康服务平台，连接来访者与专业咨询师。",
   keywords: "心理咨询,心理健康,心理医生,咨询师预约,齐家",
   authors: [{ name: "齐家团队" }],
-  viewport: "width=device-width, initial-scale=1",
   robots: "index, follow",
   openGraph: {
     title: "齐家 - 心理咨询预约平台",

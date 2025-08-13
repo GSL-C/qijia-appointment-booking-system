@@ -1,247 +1,239 @@
-import React, { useState } from 'react';
-import { Button } from './ui/Button';
-import { RepeatType } from '@/types';
-import { formatDate } from '@/lib/utils';
+'use client';
 
-interface TimeSlot {
-  startTime: string;
-  endTime: string;
-}
+import { useState } from 'react';
+import { Card, CardContent, CardHeader } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { createTimeSlotTemplates } from '@/lib/api/timeSlots';
+import type { CreateTimeSlotTemplateRequest } from '@/types/database';
 
 interface AddTimeSlotFormProps {
-  initialDate?: Date;
-  onSubmit: (data: {
-    date: string;
-    timeSlots: TimeSlot[];
-    isRecurring: boolean;
-    repeatType?: RepeatType;
-    endDate?: string;
-  }) => void;
-  onCancel: () => void;
-  isSubmitting?: boolean;
+  onSuccess?: () => void;
 }
 
-export const AddTimeSlotForm: React.FC<AddTimeSlotFormProps> = ({
-  initialDate,
-  onSubmit,
-  onCancel,
-  isSubmitting = false
-}) => {
-  const [selectedDate, setSelectedDate] = useState(
-    initialDate ? initialDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
-  );
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([
-    { startTime: '09:00', endTime: '10:00' }
+export default function AddTimeSlotForm({ onSuccess }: AddTimeSlotFormProps) {
+  const [templates, setTemplates] = useState<CreateTimeSlotTemplateRequest[]>([
+    {
+      day_of_week: 1,
+      start_time: '09:00',
+      end_time: '10:00',
+      repeat_type: 'weekly',
+      is_active: true
+    }
   ]);
-  const [isRecurring, setIsRecurring] = useState(false);
-  const [repeatType, setRepeatType] = useState<RepeatType>(RepeatType.WEEKLY);
-  const [endDate, setEndDate] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const addTimeSlot = () => {
-    setTimeSlots([...timeSlots, { startTime: '09:00', endTime: '10:00' }]);
+  const addTemplate = () => {
+    setTemplates([...templates, {
+      day_of_week: 1,
+      start_time: '09:00',
+      end_time: '10:00',
+      repeat_type: 'weekly',
+      is_active: true
+    }]);
   };
 
-  const removeTimeSlot = (index: number) => {
-    if (timeSlots.length > 1) {
-      setTimeSlots(timeSlots.filter((_, i) => i !== index));
-    }
+  const removeTemplate = (index: number) => {
+    setTemplates(templates.filter((_, i) => i !== index));
   };
 
-  const updateTimeSlot = (index: number, field: 'startTime' | 'endTime', value: string) => {
-    const newTimeSlots = [...timeSlots];
-    newTimeSlots[index][field] = value;
-    setTimeSlots(newTimeSlots);
+  const updateTemplate = (index: number, field: keyof CreateTimeSlotTemplateRequest, value: any) => {
+    const newTemplates = [...templates];
+    newTemplates[index] = { ...newTemplates[index], [field]: value };
+    setTemplates(newTemplates);
   };
 
-  const validateTimeSlots = () => {
-    for (const slot of timeSlots) {
-      if (slot.startTime >= slot.endTime) {
-        alert('结束时间必须晚于开始时间');
-        return false;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setMessage(null);
+
+    try {
+      const result = await createTimeSlotTemplates(templates);
+      
+      if (result.success) {
+        setMessage({ type: 'success', text: '时间段模板创建成功！' });
+        // 重置表单
+        setTemplates([{
+          day_of_week: 1,
+          start_time: '09:00',
+          end_time: '10:00',
+          repeat_type: 'weekly',
+          is_active: true
+        }]);
+        
+        if (onSuccess) {
+          onSuccess();
+        }
+      } else {
+        setMessage({ type: 'error', text: result.error || '创建失败，请重试' });
       }
+    } catch (error) {
+      console.error('创建时间段模板失败:', error);
+      setMessage({ type: 'error', text: '创建失败，请检查网络连接' });
+    } finally {
+      setIsLoading(false);
     }
-    return true;
   };
 
-  const handleSubmit = () => {
-    if (!validateTimeSlots()) return;
-    
-    if (isRecurring && !endDate) {
-      alert('请选择重复结束日期');
-      return;
-    }
-
-    onSubmit({
-      date: selectedDate,
-      timeSlots,
-      isRecurring,
-      repeatType: isRecurring ? repeatType : RepeatType.NONE,
-      endDate: isRecurring ? endDate : undefined
-    });
-  };
+  const dayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+  const repeatTypes = [
+    { value: 'weekly', label: '每周重复' },
+    { value: 'biweekly', label: '两周重复' },
+    { value: 'none', label: '不重复' }
+  ];
 
   return (
-    <div className="p-6 space-y-6">
-      {/* 日期选择 */}
-      <div>
-        <label className="block qijia-text-body font-medium text-[var(--ink-black)] mb-2">
-          选择日期
-        </label>
-        <input
-          type="date"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--qijia-yellow)] focus:border-transparent"
-          value={selectedDate}
-          onChange={(e) => setSelectedDate(e.target.value)}
-          min={new Date().toISOString().split('T')[0]}
-        />
-        {selectedDate && (
-          <div className="qijia-text-helper text-[var(--ink-gray)] mt-1">
-            选择的日期：{formatDate(new Date(selectedDate))}
-          </div>
-        )}
-      </div>
-
-      {/* 时间段设置 */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <label className="qijia-text-body font-medium text-[var(--ink-black)]">
-            时间段设置
-          </label>
-          <Button variant="outline" size="sm" onClick={addTimeSlot}>
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            添加时段
-          </Button>
+    <Card className="qijia-card">
+      <CardHeader>
+        <div className="text-center">
+          <h2 className="qijia-title-sub text-[var(--ink-black)]">
+            添加时间段模板
+          </h2>
+          <p className="qijia-text-body text-[var(--ink-gray)] mt-2">
+            设置您的可约时间，系统会自动生成具体的时间段
+          </p>
         </div>
+      </CardHeader>
 
-        <div className="space-y-3">
-          {timeSlots.map((slot, index) => (
-            <div key={index} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
-              <div className="flex-1 grid grid-cols-2 gap-3">
+      <div className="qijia-divider mx-6"></div>
+
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {templates.map((template, index) => (
+            <div key={index} className="p-4 border rounded-lg bg-gray-50">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-medium text-[var(--ink-black)]">时间段 {index + 1}</h3>
+                {templates.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => removeTemplate(index)}
+                  >
+                    删除
+                  </Button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* 星期 */}
                 <div>
-                  <label className="block qijia-text-helper text-[var(--ink-gray)] mb-1">
+                  <label className="block text-sm font-medium text-[var(--ink-black)] mb-1">
+                    星期
+                  </label>
+                  <select
+                    value={template.day_of_week}
+                    onChange={(e) => updateTemplate(index, 'day_of_week', parseInt(e.target.value))}
+                    className="neu-input w-full"
+                    required
+                  >
+                    {dayNames.map((day, dayIndex) => (
+                      <option key={dayIndex} value={dayIndex}>
+                        {day}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* 开始时间 */}
+                <div>
+                  <label className="block text-sm font-medium text-[var(--ink-black)] mb-1">
                     开始时间
                   </label>
                   <input
                     type="time"
-                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--qijia-yellow)] focus:border-transparent"
-                    value={slot.startTime}
-                    onChange={(e) => updateTimeSlot(index, 'startTime', e.target.value)}
+                    value={template.start_time}
+                    onChange={(e) => updateTemplate(index, 'start_time', e.target.value)}
+                    className="neu-input w-full"
+                    required
                   />
                 </div>
+
+                {/* 结束时间 */}
                 <div>
-                  <label className="block qijia-text-helper text-[var(--ink-gray)] mb-1">
+                  <label className="block text-sm font-medium text-[var(--ink-black)] mb-1">
                     结束时间
                   </label>
                   <input
                     type="time"
-                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--qijia-yellow)] focus:border-transparent"
-                    value={slot.endTime}
-                    onChange={(e) => updateTimeSlot(index, 'endTime', e.target.value)}
+                    value={template.end_time}
+                    onChange={(e) => updateTemplate(index, 'end_time', e.target.value)}
+                    className="neu-input w-full"
+                    required
                   />
                 </div>
-              </div>
-              
-              {timeSlots.length > 1 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeTimeSlot(index)}
-                  className="text-[var(--soft-red)] hover:text-[var(--soft-red)] hover:bg-red-50"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </Button>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
 
-      {/* 重复设置 */}
-      <div>
-        <label className="qijia-text-body font-medium text-[var(--ink-black)] mb-3 block">
-          重复设置
-        </label>
-        
-        <div className="space-y-3">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="recurring"
-              className="h-4 w-4 text-[var(--qijia-yellow)] focus:ring-[var(--qijia-yellow)] border-gray-300 rounded"
-              checked={isRecurring}
-              onChange={(e) => setIsRecurring(e.target.checked)}
-            />
-            <label htmlFor="recurring" className="ml-2 qijia-text-body text-[var(--ink-black)]">
-              设置为周期性重复
-            </label>
-          </div>
-
-          {isRecurring && (
-            <div className="pl-6 space-y-3 border-l-2 border-[var(--qijia-yellow)] border-opacity-30">
-              <div className="grid grid-cols-2 gap-3">
+                {/* 重复类型 */}
                 <div>
-                  <label className="block qijia-text-helper text-[var(--ink-gray)] mb-1">
-                    重复频率
+                  <label className="block text-sm font-medium text-[var(--ink-black)] mb-1">
+                    重复
                   </label>
                   <select
-                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--qijia-yellow)] focus:border-transparent"
-                    value={repeatType}
-                    onChange={(e) => setRepeatType(e.target.value as RepeatType)}
+                    value={template.repeat_type}
+                    onChange={(e) => updateTemplate(index, 'repeat_type', e.target.value as 'none' | 'weekly' | 'biweekly')}
+                    className="neu-input w-full"
+                    required
                   >
-                    <option value={RepeatType.DAILY}>每天</option>
-                    <option value={RepeatType.WEEKLY}>每周</option>
-                    <option value={RepeatType.BIWEEKLY}>每两周</option>
+                    {repeatTypes.map((type) => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
-
-                <div>
-                  <label className="block qijia-text-helper text-[var(--ink-gray)] mb-1">
-                    结束日期
-                  </label>
-                  <input
-                    type="date"
-                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--qijia-yellow)] focus:border-transparent"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    min={selectedDate}
-                  />
-                </div>
               </div>
 
-              <div className="qijia-text-helper text-[var(--qijia-yellow)] bg-[rgba(246,204,108,0.1)] p-2 rounded-lg">
-                <svg className="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                周期性设置将在未来的相同时间自动创建开放时段
+              {/* 是否激活 */}
+              <div className="mt-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={template.is_active}
+                    onChange={(e) => updateTemplate(index, 'is_active', e.target.checked)}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-[var(--ink-black)]">激活此时间段</span>
+                </label>
               </div>
             </div>
-          )}
-        </div>
-      </div>
+          ))}
 
-      {/* 操作按钮 */}
-      <div className="flex space-x-3 pt-4">
-        <Button 
-          variant="outline" 
-          onClick={onCancel}
-          className="flex-1"
-          disabled={isSubmitting}
-        >
-          取消
-        </Button>
-        <Button 
-          onClick={handleSubmit}
-          loading={isSubmitting}
-          disabled={isSubmitting || !selectedDate}
-          className="flex-1"
-        >
-          {isSubmitting ? '保存中...' : '保存设置'}
-        </Button>
-      </div>
-    </div>
+          {/* 添加更多时间段 */}
+          <div className="text-center">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={addTemplate}
+              disabled={isLoading}
+            >
+              + 添加更多时间段
+            </Button>
+          </div>
+
+          {/* 消息提示 */}
+          {message && (
+            <div className={`p-4 rounded-lg ${
+              message.type === 'success' 
+                ? 'bg-green-50 border border-green-200 text-green-700'
+                : 'bg-red-50 border border-red-200 text-red-700'
+            }`}>
+              {message.text}
+            </div>
+          )}
+
+          {/* 提交按钮 */}
+          <Button
+            type="submit"
+            className="w-full"
+            size="lg"
+            loading={isLoading}
+            disabled={isLoading || templates.length === 0}
+          >
+            创建时间段模板
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
-}; 
+} 

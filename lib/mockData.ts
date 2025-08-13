@@ -29,7 +29,7 @@ export const mockCounselors: Counselor[] = [
     bio: '青少年心理专家，在校园心理健康、学习压力、青春期问题方面有丰富经验。',
     specialties: ['青少年心理', '学习压力', '考试焦虑'],
     gender: '女'
-  }
+  },
 ];
 
 // 模拟来访者数据

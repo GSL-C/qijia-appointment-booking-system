@@ -1,0 +1,21 @@
+# Cursor ignore file - 这些文件不会在 Cursor 编辑器中显示
+# 但不影响 Git 的 .gitignore 规则
+
+# Node modules
+node_modules/
+
+# Build outputs
+.next/
+out/
+build/
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor directories and files
+.vscode/
+.idea/ 

@@ -3,11 +3,13 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import AuthCard from '@/components/AuthCard';
+import TestNavigation from '@/components/TestNavigation';
 import Link from 'next/link';
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
+      <TestNavigation />
       <div className="min-h-screen bg-gradient-yellow flex flex-col items-center justify-center p-6 relative">
         <div className="qijia-container w-full max-w-6xl">
           {/* 品牌标题区域 - 移除白色背景，融入主背景 */}
